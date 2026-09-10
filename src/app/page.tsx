@@ -20,6 +20,7 @@ export default function Home() {
   const [category, setCategory] = useState("");
   const [expenseDate, setExpenseDate] = useState("");
   const [description, setDescription] = useState("");
+  const [editingId, setEditingId] = useState<number | null>(null);
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/expenses")
@@ -66,12 +67,80 @@ export default function Home() {
     }
   }
 
+  async function handleDelete(id: number) {
+    const response = await fetch(
+      `http://127.0.0.1:8000/expenses/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
+  
+    if (response.ok) {
+      setExpenses((currentExpenses) =>
+        currentExpenses.filter((expense) => expense.id !== id)
+      );
+    }
+  }
+
+  function handleEdit(expense: Expense) {
+    setEditingId(expense.id);
+    setTitle(expense.title);
+    setAmount(String(expense.amount));
+    setCategory(expense.category);
+    setExpenseDate(expense.expense_date);
+    setDescription(expense.description ?? "");
+  }
+
+  async function handleUpdate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+  
+    if (editingId === null) {
+      return;
+    }
+  
+    const response = await fetch(
+      `http://127.0.0.1:8000/expenses/${editingId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          amount: Number(amount),
+          category,
+          expense_date: expenseDate,
+          description: description || null,
+        }),
+      }
+    );
+  
+    if (response.ok) {
+      setEditingId(null);
+      setTitle("");
+      setAmount("");
+      setCategory("");
+      setExpenseDate("");
+      setDescription("");
+  
+      const updatedExpenses = await fetch(
+        "http://127.0.0.1:8000/expenses"
+      );
+  
+      const data = await updatedExpenses.json();
+      setExpenses(data);
+    }
+  }
+
+
   return (
     <main className="mx-auto max-w-3xl p-8">
       <h1 className="mb-8 text-3xl font-bold">Expense Tracker</h1>
 
-      <form onSubmit={handleSubmit} className="mb-10 space-y-4">
-        <input
+      <form
+        onSubmit={editingId === null ? handleSubmit : handleUpdate}
+        className="mb-10 space-y-4"
+>       <input
           type="text"
           placeholder="Title"
           value={title}
@@ -113,7 +182,7 @@ export default function Home() {
           type="submit"
           className="rounded bg-black px-5 py-2 text-white"
         >
-          Add Expense
+          {editingId === null ? "Add Expense" : "Update Expense"}
         </button>
       </form>
 
@@ -128,6 +197,19 @@ export default function Home() {
             {expense.description && (
               <p>Description: {expense.description}</p>
             )}
+            <button
+                onClick={() => handleEdit(expense)}
+                className="mt-4 mr-2 rounded bg-blue-600 px-4 py-2 text-white"
+            >
+              Edit
+            </button>
+
+            <button
+                onClick={() => handleDelete(expense.id)}
+                className="mt-4 rounded bg-red-600 px-4 py-2 text-white"
+            >
+              Delete
+            </button>
           </div>
         ))}
       </div>
