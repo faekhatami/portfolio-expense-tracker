@@ -144,6 +144,13 @@ export default function Home() {
     return matchesCategory && matchesDate;
   });
 
+  const totalExpenses = filteredExpenses.length;
+
+  const totalAmount = filteredExpenses.reduce(
+    (total, expense) => total + expense.amount,
+    0
+  );
+
   return (
     <main className="mx-auto max-w-3xl p-8">
       <h1 className="mb-8 text-3xl font-bold">Expense Tracker</h1>
@@ -216,6 +223,10 @@ export default function Home() {
       />
 
       <div className="space-y-4">
+          <div className="mb-6 rounded border p-4">
+            <p>Total Expenses: {totalExpenses}</p>
+            <p>Total Amount: ${totalAmount.toFixed(2)}</p>
+          </div>
           {filteredExpenses.map((expense) => (
             <div key={expense.id} className="rounded border p-4">
             <h2 className="font-semibold">{expense.title}</h2>
