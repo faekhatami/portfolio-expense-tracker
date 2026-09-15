@@ -21,6 +21,8 @@ export default function Home() {
   const [expenseDate, setExpenseDate] = useState("");
   const [description, setDescription] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/expenses")
@@ -132,6 +134,15 @@ export default function Home() {
     }
   }
 
+  const filteredExpenses = expenses.filter((expense) => {
+    const matchesCategory =
+      categoryFilter === "" || expense.category === categoryFilter;
+  
+    const matchesDate =
+      dateFilter === "" || expense.expense_date === dateFilter;
+  
+    return matchesCategory && matchesDate;
+  });
 
   return (
     <main className="mx-auto max-w-3xl p-8">
@@ -186,9 +197,27 @@ export default function Home() {
         </button>
       </form>
 
+      <select
+        value={categoryFilter}
+        onChange={(event) => setCategoryFilter(event.target.value)}
+        className="w-full rounded border p-2 bg-white text-black"
+      >
+        <option value="">All Categories</option>
+        <option value="Food">Food</option>
+        <option value="Transport">Transport</option>
+        <option value="Education">Education</option>
+      </select>
+
+      <input
+        type="date"
+        value={dateFilter}
+        onChange={(event) => setDateFilter(event.target.value)}
+        className="w-full rounded border p-2"
+      />
+
       <div className="space-y-4">
-        {expenses.map((expense) => (
-          <div key={expense.id} className="rounded border p-4">
+          {filteredExpenses.map((expense) => (
+            <div key={expense.id} className="rounded border p-4">
             <h2 className="font-semibold">{expense.title}</h2>
             <p>Amount: {expense.amount}</p>
             <p>Category: {expense.category}</p>
