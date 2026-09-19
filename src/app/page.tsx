@@ -20,9 +20,12 @@ export default function Home() {
   const [category, setCategory] = useState("");
   const [expenseDate, setExpenseDate] = useState("");
   const [description, setDescription] = useState("");
+  
   const [editingId, setEditingId] = useState<number | null>(null);
+
   const [categoryFilter, setCategoryFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/expenses")
@@ -141,7 +144,10 @@ export default function Home() {
     const matchesDate =
       dateFilter === "" || expense.expense_date === dateFilter;
   
-    return matchesCategory && matchesDate;
+    const matchesSearch =
+      expense.title.toLowerCase().includes(searchTerm.toLowerCase());
+  
+    return matchesCategory && matchesDate && matchesSearch;
   });
 
   const totalExpenses = filteredExpenses.length;
@@ -174,13 +180,20 @@ export default function Home() {
           className="w-full rounded border p-2"
         />
 
-        <input
-          type="text"
-          placeholder="Category"
+        <select
           value={category}
           onChange={(event) => setCategory(event.target.value)}
-          className="w-full rounded border p-2"
-        />
+          className="w-full rounded border bg-white p-2 text-black"
+        >
+          <option value="">Select Category</option>
+          <option value="Food">Food</option>
+          <option value="Transport">Transport</option>
+          <option value="Education">Education</option>
+          <option value="Shopping">Shopping</option>
+          <option value="Entertainment">Entertainment</option>
+          <option value="Health">Health</option>
+          <option value="Other">Other</option>
+        </select>
 
         <input
           type="date"
@@ -204,22 +217,36 @@ export default function Home() {
         </button>
       </form>
 
+      <input
+        type="text"
+        placeholder="Search expenses..."
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.target.value)}
+        className="mb-4 w-full rounded border bg-white p-2 text-black"
+      />
+
       <select
         value={categoryFilter}
-        onChange={(event) => setCategoryFilter(event.target.value)}
-        className="w-full rounded border p-2 bg-white text-black"
+        onChange={(event) =>
+          setCategoryFilter(event.target.value)
+        }
+        className="w-full rounded border bg-white p-2 text-black"
       >
         <option value="">All Categories</option>
         <option value="Food">Food</option>
         <option value="Transport">Transport</option>
         <option value="Education">Education</option>
+        <option value="Shopping">Shopping</option>
+        <option value="Entertainment">Entertainment</option>
+        <option value="Health">Health</option>
+        <option value="Other">Other</option>
       </select>
 
       <input
         type="date"
         value={dateFilter}
         onChange={(event) => setDateFilter(event.target.value)}
-        className="w-full rounded border p-2"
+        className="mt-4 w-full rounded border p-2"
       />
 
       <div className="space-y-4">
@@ -227,31 +254,40 @@ export default function Home() {
             <p>Total Expenses: {totalExpenses}</p>
             <p>Total Amount: ${totalAmount.toFixed(2)}</p>
           </div>
-          {filteredExpenses.map((expense) => (
-            <div key={expense.id} className="rounded border p-4">
-            <h2 className="font-semibold">{expense.title}</h2>
-            <p>Amount: {expense.amount}</p>
-            <p>Category: {expense.category}</p>
-            <p>Date: {expense.expense_date}</p>
 
-            {expense.description && (
-              <p>Description: {expense.description}</p>
-            )}
-            <button
+          {filteredExpenses.length === 0 ? (
+            <p className="rounded border p-4 text-gray-500">
+              No expenses found.
+            </p>
+          ) : (
+            filteredExpenses.map((expense) => (
+            <div key={expense.id} className="rounded border p-4">
+              <h2 className="font-semibold">{expense.title}</h2>
+
+              <p>Amount: {expense.amount}</p>
+              <p>Category: {expense.category}</p>
+              <p>Date: {expense.expense_date}</p>
+
+              {expense.description && (
+                <p>Description: {expense.description}</p>
+              )}
+
+              <button
                 onClick={() => handleEdit(expense)}
                 className="mt-4 mr-2 rounded bg-blue-600 px-4 py-2 text-white"
-            >
-              Edit
-            </button>
+              >
+                Edit
+              </button>
 
-            <button
-                onClick={() => handleDelete(expense.id)}
-                className="mt-4 rounded bg-red-600 px-4 py-2 text-white"
-            >
-              Delete
-            </button>
-          </div>
-        ))}
+              <button
+                  onClick={() => handleDelete(expense.id)}
+                  className="mt-4 rounded bg-red-600 px-4 py-2 text-white"
+              >
+                Delete
+              </button>
+            </div>
+          ))
+        )}
       </div>
     </main>
   );
