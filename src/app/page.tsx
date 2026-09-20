@@ -15,12 +15,15 @@ type Expense = {
 export default function Home() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
   const [expenseDate, setExpenseDate] = useState("");
   const [description, setDescription] = useState("");
-  
+
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const [categoryFilter, setCategoryFilter] = useState("");
@@ -29,28 +32,42 @@ export default function Home() {
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/expenses")
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch expenses");
+        }
+
+        return response.json();
+      })
       .then((data) => {
         setExpenses(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to load expenses.");
+        setLoading(false);
       });
   }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const response = await fetch("http://127.0.0.1:8000/expenses", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        amount: Number(amount),
-        category,
-        expense_date: expenseDate,
-        description: description || null,
-      }),
-    });
+    const response = await fetch(
+      "http://127.0.0.1:8000/expenses",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          amount: Number(amount),
+          category,
+          expense_date: expenseDate,
+          description: description || null,
+        }),
+      }
+    );
 
     if (response.ok) {
       const newExpense = await response.json();
@@ -79,7 +96,7 @@ export default function Home() {
         method: "DELETE",
       }
     );
-  
+
     if (response.ok) {
       setExpenses((currentExpenses) =>
         currentExpenses.filter((expense) => expense.id !== id)
@@ -98,11 +115,11 @@ export default function Home() {
 
   async function handleUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-  
+
     if (editingId === null) {
       return;
     }
-  
+
     const response = await fetch(
       `http://127.0.0.1:8000/expenses/${editingId}`,
       {
@@ -119,7 +136,7 @@ export default function Home() {
         }),
       }
     );
-  
+
     if (response.ok) {
       setEditingId(null);
       setTitle("");
@@ -127,11 +144,11 @@ export default function Home() {
       setCategory("");
       setExpenseDate("");
       setDescription("");
-  
+
       const updatedExpenses = await fetch(
         "http://127.0.0.1:8000/expenses"
       );
-  
+
       const data = await updatedExpenses.json();
       setExpenses(data);
     }
@@ -139,14 +156,18 @@ export default function Home() {
 
   const filteredExpenses = expenses.filter((expense) => {
     const matchesCategory =
-      categoryFilter === "" || expense.category === categoryFilter;
-  
+      categoryFilter === "" ||
+      expense.category === categoryFilter;
+
     const matchesDate =
-      dateFilter === "" || expense.expense_date === dateFilter;
-  
+      dateFilter === "" ||
+      expense.expense_date === dateFilter;
+
     const matchesSearch =
-      expense.title.toLowerCase().includes(searchTerm.toLowerCase());
-  
+      expense.title
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
     return matchesCategory && matchesDate && matchesSearch;
   });
 
@@ -159,16 +180,24 @@ export default function Home() {
 
   return (
     <main className="mx-auto max-w-3xl p-8">
-      <h1 className="mb-8 text-3xl font-bold">Expense Tracker</h1>
+      <h1 className="mb-8 text-3xl font-bold">
+        Expense Tracker
+      </h1>
 
+      {/* Add / Edit Form */}
       <form
-        onSubmit={editingId === null ? handleSubmit : handleUpdate}
+        onSubmit={
+          editingId === null ? handleSubmit : handleUpdate
+        }
         className="mb-10 space-y-4"
->       <input
+      >
+        <input
           type="text"
           placeholder="Title"
           value={title}
-          onChange={(event) => setTitle(event.target.value)}
+          onChange={(event) =>
+            setTitle(event.target.value)
+          }
           className="w-full rounded border p-2"
         />
 
@@ -176,13 +205,17 @@ export default function Home() {
           type="number"
           placeholder="Amount"
           value={amount}
-          onChange={(event) => setAmount(event.target.value)}
+          onChange={(event) =>
+            setAmount(event.target.value)
+          }
           className="w-full rounded border p-2"
         />
 
         <select
           value={category}
-          onChange={(event) => setCategory(event.target.value)}
+          onChange={(event) =>
+            setCategory(event.target.value)
+          }
           className="w-full rounded border bg-white p-2 text-black"
         >
           <option value="">Select Category</option>
@@ -190,7 +223,9 @@ export default function Home() {
           <option value="Transport">Transport</option>
           <option value="Education">Education</option>
           <option value="Shopping">Shopping</option>
-          <option value="Entertainment">Entertainment</option>
+          <option value="Entertainment">
+            Entertainment
+          </option>
           <option value="Health">Health</option>
           <option value="Other">Other</option>
         </select>
@@ -198,14 +233,18 @@ export default function Home() {
         <input
           type="date"
           value={expenseDate}
-          onChange={(event) => setExpenseDate(event.target.value)}
+          onChange={(event) =>
+            setExpenseDate(event.target.value)
+          }
           className="w-full rounded border p-2"
         />
 
         <textarea
           placeholder="Description"
           value={description}
-          onChange={(event) => setDescription(event.target.value)}
+          onChange={(event) =>
+            setDescription(event.target.value)
+          }
           className="w-full rounded border p-2"
         />
 
@@ -213,18 +252,24 @@ export default function Home() {
           type="submit"
           className="rounded bg-black px-5 py-2 text-white"
         >
-          {editingId === null ? "Add Expense" : "Update Expense"}
+          {editingId === null
+            ? "Add Expense"
+            : "Update Expense"}
         </button>
       </form>
 
+      {/* Search */}
       <input
         type="text"
         placeholder="Search expenses..."
         value={searchTerm}
-        onChange={(event) => setSearchTerm(event.target.value)}
+        onChange={(event) =>
+          setSearchTerm(event.target.value)
+        }
         className="mb-4 w-full rounded border bg-white p-2 text-black"
       />
 
+      {/* Category Filter */}
       <select
         value={categoryFilter}
         onChange={(event) =>
@@ -237,39 +282,71 @@ export default function Home() {
         <option value="Transport">Transport</option>
         <option value="Education">Education</option>
         <option value="Shopping">Shopping</option>
-        <option value="Entertainment">Entertainment</option>
+        <option value="Entertainment">
+          Entertainment
+        </option>
         <option value="Health">Health</option>
         <option value="Other">Other</option>
       </select>
 
+      {/* Date Filter */}
       <input
         type="date"
         value={dateFilter}
-        onChange={(event) => setDateFilter(event.target.value)}
+        onChange={(event) =>
+          setDateFilter(event.target.value)
+        }
         className="mt-4 w-full rounded border p-2"
       />
 
-      <div className="space-y-4">
-          <div className="mb-6 rounded border p-4">
-            <p>Total Expenses: {totalExpenses}</p>
-            <p>Total Amount: ${totalAmount.toFixed(2)}</p>
-          </div>
+      <div className="mt-4 space-y-4">
+        {/* Loading */}
+        {loading && (
+          <p className="mb-4 text-gray-500">
+            Loading expenses...
+          </p>
+        )}
 
-          {filteredExpenses.length === 0 ? (
-            <p className="rounded border p-4 text-gray-500">
-              No expenses found.
-            </p>
-          ) : (
-            filteredExpenses.map((expense) => (
-            <div key={expense.id} className="rounded border p-4">
-              <h2 className="font-semibold">{expense.title}</h2>
+        {/* Error */}
+        {error && (
+          <p className="mb-4 rounded border border-red-300 bg-red-50 p-4 text-red-600">
+            {error}
+          </p>
+        )}
+
+        {/* Summary */}
+        <div className="mb-6 rounded border p-4">
+          <p>Total Expenses: {totalExpenses}</p>
+          <p>
+            Total Amount: ${totalAmount.toFixed(2)}
+          </p>
+        </div>
+
+        {/* No Results / Expense List */}
+        {filteredExpenses.length === 0 &&
+        !loading &&
+        !error ? (
+          <p className="rounded border p-4 text-gray-500">
+            No expenses found.
+          </p>
+        ) : (
+          filteredExpenses.map((expense) => (
+            <div
+              key={expense.id}
+              className="rounded border p-4"
+            >
+              <h2 className="font-semibold">
+                {expense.title}
+              </h2>
 
               <p>Amount: {expense.amount}</p>
               <p>Category: {expense.category}</p>
               <p>Date: {expense.expense_date}</p>
 
               {expense.description && (
-                <p>Description: {expense.description}</p>
+                <p>
+                  Description: {expense.description}
+                </p>
               )}
 
               <button
@@ -280,8 +357,10 @@ export default function Home() {
               </button>
 
               <button
-                  onClick={() => handleDelete(expense.id)}
-                  className="mt-4 rounded bg-red-600 px-4 py-2 text-white"
+                onClick={() =>
+                  handleDelete(expense.id)
+                }
+                className="mt-4 rounded bg-red-600 px-4 py-2 text-white"
               >
                 Delete
               </button>
