@@ -30,6 +30,8 @@ export default function Home() {
   const [dateFilter, setDateFilter] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
 
+  const [formError, setFormError] = useState("");
+
   useEffect(() => {
     fetch("http://127.0.0.1:8000/expenses")
       .then((response) => {
@@ -51,7 +53,29 @@ export default function Home() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
+  
+    if (!title.trim()) {
+      setFormError("Title is required.");
+      return;
+    }
+  
+    if (!amount || Number(amount) <= 0) {
+      setFormError("Amount must be greater than 0.");
+      return;
+    }
+  
+    if (!category) {
+      setFormError("Please select a category.");
+      return;
+    }
+  
+    if (!expenseDate) {
+      setFormError("Date is required.");
+      return;
+    }
+  
+    setFormError("");
+  
     const response = await fetch(
       "http://127.0.0.1:8000/expenses",
       {
@@ -115,6 +139,28 @@ export default function Home() {
 
   async function handleUpdate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!title.trim()) {
+      setFormError("Title is required.");
+      return;
+    }
+    
+    if (!amount || Number(amount) <= 0) {
+      setFormError("Amount must be greater than 0.");
+      return;
+    }
+    
+    if (!category) {
+      setFormError("Please select a category.");
+      return;
+    }
+    
+    if (!expenseDate) {
+      setFormError("Date is required.");
+      return;
+    }
+    
+    setFormError("");
 
     if (editingId === null) {
       return;
@@ -191,6 +237,12 @@ export default function Home() {
         }
         className="mb-10 space-y-4"
       >
+        {formError && (
+          <p className="rounded border border-red-300 bg-red-50 p-3 text-red-600">
+            {formError}
+          </p>
+        )}
+
         <input
           type="text"
           placeholder="Title"
