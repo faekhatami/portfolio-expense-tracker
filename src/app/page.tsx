@@ -224,6 +224,17 @@ export default function Home() {
     0
   );
 
+  const categoryCount = new Set(
+    filteredExpenses.map((expense) => expense.category)
+  ).size;
+  
+  const highestExpense =
+    filteredExpenses.length > 0
+      ? Math.max(
+          ...filteredExpenses.map((expense) => expense.amount)
+        )
+      : 0;
+
   return (
     <main className="mx-auto max-w-3xl p-8">
       <h1 className="mb-8 text-3xl font-bold">
@@ -367,11 +378,42 @@ export default function Home() {
         )}
 
         {/* Summary */}
-        <div className="mb-6 rounded border p-4">
-          <p>Total Expenses: {totalExpenses}</p>
-          <p>
-            Total Amount: ${totalAmount.toFixed(2)}
-          </p>
+        <div className="mb-6 grid gap-4 sm:grid-cols-2">
+          <div className="rounded border p-4">
+            <p className="text-sm text-gray-500">
+              Total Expenses
+            </p>
+            <p className="text-2xl font-bold">
+              {totalExpenses}
+            </p>
+          </div>
+
+          <div className="rounded border p-4">
+            <p className="text-sm text-gray-500">
+              Total Amount
+            </p>
+            <p className="text-2xl font-bold">
+              ${totalAmount.toFixed(2)}
+            </p>
+          </div>
+
+          <div className="rounded border p-4">
+            <p className="text-sm text-gray-500">
+              Categories
+            </p>
+            <p className="text-2xl font-bold">
+              {categoryCount}
+            </p>
+          </div>
+
+          <div className="rounded border p-4">
+            <p className="text-sm text-gray-500">
+              Highest Expense
+            </p>
+            <p className="text-2xl font-bold">
+              ${highestExpense.toFixed(2)}
+            </p>
+          </div>
         </div>
 
         {/* No Results / Expense List */}
