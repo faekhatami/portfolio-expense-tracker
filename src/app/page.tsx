@@ -1,6 +1,10 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import ExpenseDashboard from "@/components/ExpenseDashboard";
+import ExpenseChart from "@/components/ExpenseChart";
+import ExpenseList from "@/components/ExpenseList";
+import ExpenseForm from "@/components/ExpenseForm";
 
 type Expense = {
   id: number;
@@ -252,95 +256,24 @@ export default function Home() {
         Expense Tracker
       </h1>
 
-      {/* Add / Edit Form */}
-      <form
+      <ExpenseForm
+        editingId={editingId}
+        title={title}
+        amount={amount}
+        category={category}
+        expenseDate={expenseDate}
+        description={description}
+        formError={formError}
+        onTitleChange={setTitle}
+        onAmountChange={setAmount}
+        onCategoryChange={setCategory}
+        onExpenseDateChange={setExpenseDate}
+        onDescriptionChange={setDescription}
         onSubmit={
-          editingId === null ? handleSubmit : handleUpdate
+          editingId === null
+            ? handleSubmit
+            : handleUpdate
         }
-        className="mb-10 space-y-4"
-      >
-        {formError && (
-          <p className="rounded border border-red-300 bg-red-50 p-3 text-red-600">
-            {formError}
-          </p>
-        )}
-
-        <input
-          type="text"
-          placeholder="Title"
-          value={title}
-          onChange={(event) =>
-            setTitle(event.target.value)
-          }
-          className="w-full rounded border p-2"
-        />
-
-        <input
-          type="number"
-          placeholder="Amount"
-          value={amount}
-          onChange={(event) =>
-            setAmount(event.target.value)
-          }
-          className="w-full rounded border p-2"
-        />
-
-        <select
-          value={category}
-          onChange={(event) =>
-            setCategory(event.target.value)
-          }
-          className="w-full rounded border bg-white p-2 text-black"
-        >
-          <option value="">Select Category</option>
-          <option value="Food">Food</option>
-          <option value="Transport">Transport</option>
-          <option value="Education">Education</option>
-          <option value="Shopping">Shopping</option>
-          <option value="Entertainment">
-            Entertainment
-          </option>
-          <option value="Health">Health</option>
-          <option value="Other">Other</option>
-        </select>
-
-        <input
-          type="date"
-          value={expenseDate}
-          onChange={(event) =>
-            setExpenseDate(event.target.value)
-          }
-          className="w-full rounded border p-2"
-        />
-
-        <textarea
-          placeholder="Description"
-          value={description}
-          onChange={(event) =>
-            setDescription(event.target.value)
-          }
-          className="w-full rounded border p-2"
-        />
-
-        <button
-          type="submit"
-          className="rounded bg-black px-5 py-2 text-white"
-        >
-          {editingId === null
-            ? "Add Expense"
-            : "Update Expense"}
-        </button>
-      </form>
-
-      {/* Search */}
-      <input
-        type="text"
-        placeholder="Search expenses..."
-        value={searchTerm}
-        onChange={(event) =>
-          setSearchTerm(event.target.value)
-        }
-        className="mb-4 w-full rounded border bg-white p-2 text-black"
       />
 
       {/* Category Filter */}
@@ -388,80 +321,19 @@ export default function Home() {
           </p>
         )}
 
-        {/* Summary */}
-        <div className="mb-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded border p-4">
-            <p className="text-sm text-gray-500">
-              Total Expenses
-            </p>
-            <p className="text-2xl font-bold">
-              {totalExpenses}
-            </p>
-          </div>
+        <ExpenseDashboard
+          totalExpenses={totalExpenses}
+          totalAmount={totalAmount}
+          categoryCount={categoryCount}
+          highestExpense={highestExpense}
+        />
 
-          <div className="rounded border p-4">
-            <p className="text-sm text-gray-500">
-              Total Amount
-            </p>
-            <p className="text-2xl font-bold">
-              ${totalAmount.toFixed(2)}
-            </p>
-          </div>
-
-          <div className="rounded border p-4">
-            <p className="text-sm text-gray-500">
-              Categories
-            </p>
-            <p className="text-2xl font-bold">
-              {categoryCount}
-            </p>
-          </div>
-
-          <div className="rounded border p-4">
-            <p className="text-sm text-gray-500">
-              Highest Expense
-            </p>
-            <p className="text-2xl font-bold">
-              ${highestExpense.toFixed(2)}
-            </p>
-          </div>
-        </div>
-
-        <div className="mb-8 rounded border p-4">
-          <h2 className="mb-4 text-xl font-bold">
-            Expenses by Category
-          </h2>
-
-          <div className="space-y-4">
-            {Object.entries(categoryTotals).map(
-              ([category, total]) => {
-                const width =
-                  totalAmount === 0
-                    ? 0
-                    : (total / totalAmount) * 100;
-
-                return (
-                  <div key={category}>
-                    <div className="mb-1 flex justify-between">
-                      <span>{category}</span>
-                      <span>${total.toFixed(2)}</span>
-                    </div>
-
-                    <div className="h-4 rounded bg-gray-200">
-                      <div
-                        className="h-4 rounded bg-black"
-                        style={{ width: `${width}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              }
-            )}
-          </div>
-        </div>
+        <ExpenseChart
+          categoryTotals={categoryTotals}
+          totalAmount={totalAmount}
+        />
 
 
-        {/* No Results / Expense List */}
         {filteredExpenses.length === 0 &&
         !loading &&
         !error ? (
@@ -469,42 +341,11 @@ export default function Home() {
             No expenses found.
           </p>
         ) : (
-          filteredExpenses.map((expense) => (
-            <div
-              key={expense.id}
-              className="rounded border p-4"
-            >
-              <h2 className="font-semibold">
-                {expense.title}
-              </h2>
-
-              <p>Amount: {expense.amount}</p>
-              <p>Category: {expense.category}</p>
-              <p>Date: {expense.expense_date}</p>
-
-              {expense.description && (
-                <p>
-                  Description: {expense.description}
-                </p>
-              )}
-
-              <button
-                onClick={() => handleEdit(expense)}
-                className="mt-4 mr-2 rounded bg-blue-600 px-4 py-2 text-white"
-              >
-                Edit
-              </button>
-
-              <button
-                onClick={() =>
-                  handleDelete(expense.id)
-                }
-                className="mt-4 rounded bg-red-600 px-4 py-2 text-white"
-              >
-                Delete
-              </button>
-            </div>
-          ))
+          <ExpenseList
+            expenses={filteredExpenses}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
         )}
       </div>
     </main>
