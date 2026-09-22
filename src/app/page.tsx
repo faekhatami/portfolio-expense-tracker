@@ -37,12 +37,29 @@ export default function Home() {
   const [formError, setFormError] = useState("");
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/expenses")
+    setLoading(true);
+    setError("");
+  
+    const params = new URLSearchParams();
+  
+    if (categoryFilter) {
+      params.append("category", categoryFilter);
+    }
+  
+    if (dateFilter) {
+      params.append("expense_date", dateFilter);
+    }
+
+    if (searchTerm) {
+      params.append("search", searchTerm);
+    }
+  
+    fetch(`http://127.0.0.1:8000/expenses?${params.toString()}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Failed to fetch expenses");
         }
-
+  
         return response.json();
       })
       .then((data) => {
@@ -53,7 +70,7 @@ export default function Home() {
         setError("Failed to load expenses.");
         setLoading(false);
       });
-  }, []);
+    }, [categoryFilter, dateFilter, searchTerm]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -204,46 +221,30 @@ export default function Home() {
     }
   }
 
-  const filteredExpenses = expenses.filter((expense) => {
-    const matchesCategory =
-      categoryFilter === "" ||
-      expense.category === categoryFilter;
 
-    const matchesDate =
-      dateFilter === "" ||
-      expense.expense_date === dateFilter;
+  const totalExpenses = expenses.length;
 
-    const matchesSearch =
-      expense.title
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-
-    return matchesCategory && matchesDate && matchesSearch;
-  });
-
-  const totalExpenses = filteredExpenses.length;
-
-  const totalAmount = filteredExpenses.reduce(
+  const totalAmount = expenses.reduce(
     (total, expense) => total + expense.amount,
     0
   );
-
+  
   const categoryCount = new Set(
-    filteredExpenses.map((expense) => expense.category)
+    expenses.map((expense) => expense.category)
   ).size;
   
   const highestExpense =
-    filteredExpenses.length > 0
+    expenses.length > 0
       ? Math.max(
-          ...filteredExpenses.map((expense) => expense.amount)
+          ...expenses.map((expense) => expense.amount)
         )
       : 0;
-
-  const categoryTotals = filteredExpenses.reduce(
+  
+  const categoryTotals = expenses.reduce(
     (totals, expense) => {
       totals[expense.category] =
         (totals[expense.category] || 0) + expense.amount;
-      
+  
       return totals;
     },
     {} as Record<string, number>
@@ -306,6 +307,14 @@ export default function Home() {
         className="mt-4 w-full rounded border p-2"
       />
 
+      <input
+        type="text"
+        placeholder="Search expenses..."
+        value={searchTerm}
+        onChange={(event) => setSearchTerm(event.target.value)}
+        className="mt-4 w-full rounded border bg-white p-2 text-black"
+      />
+
       <div className="mt-4 space-y-4">
         {/* Loading */}
         {loading && (
@@ -334,19 +343,19 @@ export default function Home() {
         />
 
 
-        {filteredExpenses.length === 0 &&
-        !loading &&
-        !error ? (
-          <p className="rounded border p-4 text-gray-500">
-            No expenses found.
-          </p>
-        ) : (
-          <ExpenseList
-            expenses={filteredExpenses}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        )}
+      {expenses.length === 0 &&
+      !loading &&
+      !error ? (
+        <p className="rounded border p-4 text-gray-500">
+          No expenses found.
+        </p>
+      ) : (
+        <ExpenseList
+          expenses={expenses}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
       </div>
     </main>
   );

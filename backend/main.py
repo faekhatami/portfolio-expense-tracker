@@ -1,6 +1,6 @@
 from datetime import date, datetime
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from database import get_connection
 from pydantic import BaseModel
@@ -52,12 +52,36 @@ def test_db():
 
 
 @app.get("/expenses", response_model=list[ExpenseResponse])
-def get_expenses():
+def get_expenses(
+    category: str | None = None,
+    expense_date: str | None = None,
+    search: str | None = None,
+):
     connection = get_connection()
     cursor = connection.cursor()
 
+    query = "SELECT * FROM expenses"
+    conditions = []
+    params = []
 
-    cursor.execute("SELECT * FROM expenses;")
+    if category:
+        conditions.append("category = %s")
+        params.append(category)
+
+    if expense_date:
+        conditions.append("expense_date = %s")
+        params.append(expense_date)
+
+    if search:
+        conditions.append("title ILIKE %s")
+        params.append(f"%{search}%")
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    query += " ORDER BY expense_date DESC"
+
+    cursor.execute(query, params)
     rows = cursor.fetchall()
 
     expenses = []
