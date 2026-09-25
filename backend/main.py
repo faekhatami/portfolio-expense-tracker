@@ -3,7 +3,7 @@ from datetime import date, datetime
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from database import get_connection
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
@@ -16,17 +16,17 @@ app.add_middleware(
 )
 
 class ExpenseCreate(BaseModel):
-    title: str
-    amount: float
-    category: str
-    expense_date: str
+    title: str = Field(min_length=1)
+    amount: float = Field(gt=0)
+    category: str = Field(min_length=1)
+    expense_date: date
     description: str | None = None
 
 class ExpenseUpdate(BaseModel):
-    title: str
-    amount: float
-    category: str
-    expense_date: str
+    title: str = Field(min_length=1)
+    amount: float = Field(gt=0)
+    category: str = Field(min_length=1)
+    expense_date: date
     description: str | None = None
 
 class ExpenseResponse(BaseModel):
