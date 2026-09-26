@@ -58,3 +58,56 @@ expense-tracker/
 ├── public/
 ├── package.json
 └── README.md
+
+
+## Database Setup
+
+Create a PostgreSQL database named:
+
+`expense_tracker`
+
+The application uses PostgreSQL to store expense data.
+
+## API
+
+The backend provides REST API endpoints for managing expenses.
+
+Main endpoints:
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/expenses` | Get all expenses |
+| GET | `/expenses/{id}` | Get one expense |
+| POST | `/expenses` | Create an expense |
+| PUT | `/expenses/{id}` | Update an expense |
+| DELETE | `/expenses/{id}` | Delete an expense |
+
+The `GET /expenses` endpoint supports server-side filtering by:
+
+- Category
+- Date
+- Search term
+
+## Screenshots
+
+### Dashboard
+
+_Add a screenshot of the application UI here._
+
+## What I Practiced
+
+This project helped me practice:
+
+- Full-stack development
+- Next.js and React
+- TypeScript
+- FastAPI
+- PostgreSQL
+- Raw SQL queries
+- REST API development
+- Server-side filtering
+- Backend validation with Pydantic
+- Frontend-backend integration
+- Data visualization
+- Component-based UI development
+- Responsive UI design
