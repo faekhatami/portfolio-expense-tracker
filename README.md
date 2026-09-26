@@ -58,21 +58,65 @@ expense-tracker/
 ├── public/
 ├── package.json
 └── README.md
+```
 
+## Running the Project
+
+### Frontend
+
+Install dependencies:
+
+npm install
+
+Start the development server:
+
+npm run dev
+
+The frontend runs on:
+
+http://localhost:3000
+
+### Backend
+
+Create a virtual environment:
+
+python -m venv venv
+
+Activate it on Windows:
+
+.\venv\Scripts\activate
+
+Install the backend dependencies:
+
+pip install -r requirements.txt
+
+Create a `.env` file inside the `backend` folder:
+
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/expense_tracker
+
+Start the FastAPI server:
+
+uvicorn main:app --reload
+
+The API runs on:
+
+http://127.0.0.1:8000
+
+FastAPI Swagger documentation:
+
+http://127.0.0.1:8000/docs
 
 ## Database Setup
 
 Create a PostgreSQL database named:
 
-`expense_tracker`
+expense_tracker
 
 The application uses PostgreSQL to store expense data.
 
 ## API
 
 The backend provides REST API endpoints for managing expenses.
-
-Main endpoints:
 
 | Method | Endpoint | Description |
 |---|---|---|
@@ -87,12 +131,6 @@ The `GET /expenses` endpoint supports server-side filtering by:
 - Category
 - Date
 - Search term
-
-## Screenshots
-
-### Dashboard
-
-_Add a screenshot of the application UI here._
 
 ## What I Practiced
 
